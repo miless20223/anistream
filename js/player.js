@@ -389,13 +389,21 @@ export class Player {
 
   // --- Следующая серия ---
 
+  // Серия действительно досмотрена: HLS-поток иногда шлёт ended на разрыве буфера посреди видео
+  isAtEnd() {
+    const v = this.video;
+    return v.duration > 0 && v.currentTime >= v.duration - 1.5;
+  }
+
   onEnded() {
     this.saveProgress(true);
-    if (!this.hasNext() || !getPrefs().autoNext) return;
+    if (!this.hasNext() || !getPrefs().autoNext || !this.isAtEnd()) return;
+    this.cancelNext();
     let left = 5;
     this.el.nextCount.textContent = left;
     this.el.nextCard.hidden = false;
     this.nextTimer = setInterval(() => {
+      if (!this.isAtEnd() || !this.video.paused) return this.cancelNext();
       left -= 1;
       this.el.nextCount.textContent = left;
       if (left <= 0) this.goNext();

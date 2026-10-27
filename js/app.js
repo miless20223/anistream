@@ -238,6 +238,9 @@ async function renderAnime(id, requestedEp) {
       <div class="watch-main">
         <div class="watch-head">
           <h2 id="epTitle"></h2>
+          ${total > 1 ? `<select id="epSelect" class="ep-select" aria-label="Выбор серии">${
+            Array.from({ length: total }, (_, i) => `<option value="${i + 1}">${i + 1} серия</option>`).join('')
+          }</select>` : ''}
           <div class="ep-nav">
             <button class="btn ghost sm" id="prevEp">‹ Пред.</button>
             <button class="btn ghost sm" id="nextEp">След. ›</button>
@@ -250,12 +253,12 @@ async function renderAnime(id, requestedEp) {
       </div>
       <aside class="watch-side">
         <div class="side-block">
-          <h3>Озвучка</h3>
-          <div class="dubs" id="dubs"></div>
+          <div class="side-head"><h3>Серии · ${total}</h3>${total > 24 ? '<input type="number" min="1" id="epJump" placeholder="№">' : ''}</div>
+          <div class="episodes" id="episodes"></div>
         </div>
         <div class="side-block">
-          <div class="side-head"><h3>Серии</h3>${total > 24 ? '<input type="number" min="1" id="epJump" placeholder="№">' : ''}</div>
-          <div class="episodes" id="episodes"></div>
+          <h3>Озвучка</h3>
+          <div class="dubs" id="dubs"></div>
         </div>
       </aside>
     </section>` : '<div class="empty">Серии ещё не вышли.</div>'}
@@ -314,7 +317,9 @@ async function renderAnime(id, requestedEp) {
     episode = n;
     // replaceState не вызывает hashchange — страница не перерисовывается
     window.history.replaceState(null, '', `#/anime/${id}?ep=${n}`);
-    document.getElementById('epTitle').textContent = total > 1 ? `${n} серия` : 'Фильм';
+    document.getElementById('epTitle').textContent = total > 1 ? '' : 'Фильм';
+    const epSelect = document.getElementById('epSelect');
+    if (epSelect) epSelect.value = String(n);
     document.getElementById('prevEp').disabled = n <= 1;
     document.getElementById('nextEp').disabled = n >= total;
     renderEpisodes();
@@ -356,6 +361,9 @@ async function renderAnime(id, requestedEp) {
   });
   document.getElementById('prevEp').addEventListener('click', () => episode > 1 && openEpisode(episode - 1, { autoplay: true }));
   document.getElementById('nextEp').addEventListener('click', () => episode < total && openEpisode(episode + 1, { autoplay: true }));
+  document.getElementById('epSelect')?.addEventListener('change', (e) => {
+    openEpisode(Number(e.target.value), { autoplay: true });
+  });
   document.getElementById('epJump')?.addEventListener('change', (e) => {
     const n = Math.min(total, Math.max(1, Number(e.target.value) || 1));
     openEpisode(n, { autoplay: true });
