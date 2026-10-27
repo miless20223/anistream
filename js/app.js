@@ -1,5 +1,5 @@
 import {
-  listAnimes, getAnime, getSimilar, getGenres, imageUrl, cleanDescription,
+  listAnimes, getAnime, getSimilar, getGenres, getDescription, imageUrl, cleanDescription,
   KIND, STATUS, RATING, PAGE_SIZE,
 } from './api.js';
 import { getEpisodeSources, prefetchEpisode } from './sources.js';
@@ -200,7 +200,6 @@ async function renderAnime(id, requestedEp) {
   const total = episodeCount(anime);
   const history = getHistoryEntry(id);
   let episode = Math.min(Math.max(1, requestedEp || history?.episode || 1), Math.max(1, total));
-  const desc = cleanDescription(anime.description);
   const altTitles = [anime.name, ...(anime.english || []), ...(anime.japanese || [])].filter((t) => t && t !== anime.russian);
   const bg = imageUrl(anime.image?.original);
 
@@ -232,7 +231,7 @@ async function renderAnime(id, requestedEp) {
       </div>
     </div>
 
-    ${desc ? `<section class="desc"><p>${esc(desc).replace(/\n+/g, '</p><p>')}</p></section>` : ''}
+    <section class="desc" id="desc" hidden></section>
 
     ${total ? `
     <section class="watch" id="watch">
@@ -268,6 +267,14 @@ async function renderAnime(id, requestedEp) {
 
   document.getElementById('favBtn').addEventListener('click', (e) => {
     e.currentTarget.textContent = toggleFavorite(anime) ? '♥ В избранном' : '♡ В избранное';
+  });
+
+  // Описание не входит в локальный каталог — подтягиваем с Shikimori, если он доступен
+  (anime.description ? Promise.resolve(cleanDescription(anime.description)) : getDescription(id)).then((desc) => {
+    const el = document.getElementById('desc');
+    if (!desc || !el) return;
+    el.innerHTML = `<p>${esc(desc).replace(/\n+/g, '</p><p>')}</p>`;
+    el.hidden = false;
   });
 
   getSimilar(id).then((list) => {

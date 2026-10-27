@@ -15,7 +15,9 @@ powershell -ExecutionPolicy Bypass -File server.ps1
 
 | Файл | Что делает |
 |---|---|
-| `js/api.js` | Shikimori API: каталог, поиск, фильтры, жанры, похожие. Кэш + ограничение частоты запросов |
+| `catalog/` | Весь каталог аниме (выгрузка Shikimori): `index.json` — список, `details/*.json` — доп. поля |
+| `tools/export-catalog.ps1` | Обновить каталог: `powershell -ExecutionPolicy Bypass -File tools\export-catalog.ps1` (~15 мин) |
+| `js/api.js` | Каталог, поиск, фильтры, жанры, похожие — локально из `catalog/`. С Shikimori берётся только описание |
 | `js/player.js` | Плеер: адаптивное качество, ручной выбор качества, аудиодорожки, субтитры, скорость, PiP, полноэкранный режим, горячие клавиши, «пропустить опенинг», автопереход |
 | `js/sources.js` | Откуда брать видео серии (озвучки) |
 | `js/store.js` | История, прогресс серий, избранное, настройки (localStorage) |
